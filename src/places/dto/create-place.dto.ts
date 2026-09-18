@@ -1,6 +1,6 @@
 import { PlaceCategory } from "../enums/placeCategory.enum"
 import { PlaceStatus } from "../enums/placeStatus.enum"
-import { IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator"
+import { ArrayUnique, IsArray, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator"
 
 export class CreatePlaceDto {
     @IsString()
@@ -20,9 +20,10 @@ export class CreatePlaceDto {
     @IsNotEmpty()
     address: string
 
-    @IsString({each: true})
-    @IsArray()
     @IsOptional()
+    @IsArray()
+    @ArrayUnique()
+    @IsString({each: true})
     services?: string[]
 
     @IsEnum(PlaceStatus)
