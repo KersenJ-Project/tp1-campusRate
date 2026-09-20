@@ -6,11 +6,15 @@ import { PlaceStatus } from './enums/placeStatus.enum';
 import { randomUUID } from 'crypto';
 import { GetPlacesDto } from './dto/get-places.dto';
 import type { PaginatedResult } from '../common/interfaces/paginated-result.interface';
+import { ReviewsService } from '../reviews/reviews.service';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class PlacesService {
 
   private places: Place[] = []
+
+  constructor(private readonly reviewsService: ReviewsService) {}
 
   create(createPlaceDto: CreatePlaceDto) {
     const now = new Date().toISOString()
@@ -75,5 +79,18 @@ export class PlacesService {
     }
 
     this.places.splice(index, 1);
+  }
+
+  calculateReviewCount(placeId: string): number {
+    const place = this.findOne(placeId)
+    const nbReviews = this.reviewsService.findByPlace(placeId).length
+
+    place.reviewCount = nbReviews
+    return nbReviews;
+  }
+
+  @OnEvent('review.changed')
+  handleReviewChangedEvent(payload: { placeId: string }) {
+    this.calculateReviewCount(payload.placeId);
   }
 }

@@ -31,4 +31,9 @@ export class ReviewsController {
   remove(@Param('id') id: string) {
     return this.reviewsService.remove(id);
   }
+  
+  @Get(':placeId')
+  findByPlace(@Param('placeId') placeId: string) {
+    return this.reviewsService.findByPlace(placeId);
+  }
 }

@@ -3,15 +3,19 @@ import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './entities/review.entity';
 import { randomUUID } from 'crypto';
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 @Injectable()
 export class ReviewsService {
   private reviews: Review[] = []
 
+  constructor(private readonly eventEmitter: EventEmitter2) {}
+
   create(placeId: string, createReviewDto: CreateReviewDto) {
     if (!placeId) {
       throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
     }
+
     const now = new Date().toISOString()
     const newReview: Review = {
       id: `rev_${randomUUID().substring(0, 8)}`,
@@ -22,7 +26,10 @@ export class ReviewsService {
     }
 
     this.reviews.push(newReview)
-    return newReview
+
+    this.eventEmitter.emit("review.changed", { placeId });
+
+    return newReview;
   }
 
   findAll() {
@@ -51,6 +58,12 @@ export class ReviewsService {
       throw new NotFoundException(`La critique avec l'ID "${id}" n'existe pas.`);
     }
 
-    this.reviews.splice(index, 1);
+    const deletedReview = this.reviews.splice(index, 1)[0];
+
+    this.eventEmitter.emit('review.changed', { placeId: deletedReview.placeId });
+  }
+
+  findByPlace(placeId: string) {
+    return this.reviews.filter((r) => r.placeId === placeId);
   }
 }
