@@ -38,8 +38,12 @@ export class PlacesService {
     return place
   }
 
-  update(id: number, updatePlaceDto: UpdatePlaceDto) {
-    return `This action updates a #${id} place`;
+  update(id: string, updatePlaceDto: UpdatePlaceDto) {
+    const place: Place = this.findOne(id)
+    Object.assign(place,updatePlaceDto)
+    place.updatedAt = new Date().toISOString()
+
+    return place
   }
 
   remove(id: string) {

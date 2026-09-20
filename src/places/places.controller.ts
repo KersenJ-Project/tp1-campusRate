@@ -24,7 +24,7 @@ export class PlacesController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto) {
-    return this.placesService.update(+id, updatePlaceDto);
+    return this.placesService.update(id, updatePlaceDto);
   }
 
   @Delete(':id')
