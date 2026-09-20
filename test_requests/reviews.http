@@ -1,0 +1,192 @@
+### Variables globales
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+###############################################################################
+# PRE-REQUIS : Création d'un lieu (Place) pour y rattacher des avis
+###############################################################################
+
+# @name setupPlace
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Bibliothèque des Sciences",
+  "description": "Un endroit calme pour étudier avec accès aux laboratoires.",
+  "category": "LIBRARY",
+  "address": "2000 Boulevard de l'Université",
+  "services": ["Wi-Fi", "Silencieux"],
+  "status": "ACTIVE"
+}
+
+### Récupération de l'ID de l'endroit créé
+@placeId = {{setupPlace.response.body.id}}
+
+
+###############################################################################
+# 1. CRÉATION D'AVIS (POST /reviews?placeId=...)
+###############################################################################
+
+### 1.1 Créer un premier avis valide (Note: 5)
+# @name createReview1
+POST {{baseUrl}}/reviews?placeId={{placeId}}
+Content-Type: {{contentType}}
+
+{
+  "authorName": "Alice Dupuis",
+  "comment": "Super endroit, très calme et propre.",
+  "rating": 5
+}
+
+### Récupération de l'ID du premier avis
+@reviewId1 = {{createReview1.response.body.id}}
+
+
+### 1.2 Créer un deuxième avis valide (Note: 3)
+# @name createReview2
+POST {{baseUrl}}/reviews?placeId={{placeId}}
+Content-Type: {{contentType}}
+
+{
+  "authorName": "Bob Martin",
+  "comment": "Un peu bruyant vers midi, mais correct dans l'ensemble.",
+  "rating": 3
+}
+
+### Récupération de l'ID du deuxième avis
+@reviewId2 = {{createReview2.response.body.id}}
+
+
+### 1.3 ÉCHEC : Création sans 'placeId'
+POST {{baseUrl}}/reviews
+Content-Type: {{contentType}}
+
+{
+  "authorName": "Charlie",
+  "comment": "Commentaire orphelin",
+  "rating": 4
+}
+
+
+### 1.4 ÉCHEC : Validation - Note invalide (Note > 5 ou Note < 1)
+POST {{baseUrl}}/reviews?placeId={{placeId}}
+Content-Type: {{contentType}}
+
+{
+  "authorName": "David",
+  "comment": "Hors limites",
+  "rating": 10
+}
+
+
+### 1.5 ÉCHEC : Validation - Champs obligatoires manquants
+POST {{baseUrl}}/reviews?placeId={{placeId}}
+Content-Type: {{contentType}}
+
+{
+  "authorName": "Eve"
+}
+
+
+###############################################################################
+# 2. LECTURE DES AVIS (GET /reviews)
+###############################################################################
+
+### 2.1 Récupérer tous les avis
+GET {{baseUrl}}/reviews
+
+
+### 2.2 Récupérer les avis filtrés par lieu (Query param)
+GET {{baseUrl}}/reviews?placeId={{placeId}}
+
+
+### 2.3 Récupérer les avis d'un endroit via la route spécifique
+GET {{baseUrl}}/reviews/places/{{placeId}}
+
+
+###############################################################################
+# 3. LECTURE PAR ID (GET /reviews/:id)
+###############################################################################
+
+### 3.1 Obtenir un avis existant
+GET {{baseUrl}}/reviews/{{reviewId1}}
+
+
+### 3.2 ÉCHEC : Obtenir un avis inexistant (404 Not Found)
+GET {{baseUrl}}/reviews/rev_inexistant
+
+
+###############################################################################
+# 4. MISE À JOUR D'UN AVIS (PATCH /reviews/:id)
+###############################################################################
+
+### 4.1 Mettre à jour la note et le commentaire d'un avis
+PATCH {{baseUrl}}/reviews/{{reviewId2}}
+Content-Type: {{contentType}}
+
+{
+  "rating": 1,
+  "comment": "Mise à jour : Très déçu lors de ma dernière visite, trop de bruit."
+}
+
+
+### 4.2 ÉCHEC : Mise à jour avec des données invalides
+PATCH {{baseUrl}}/reviews/{{reviewId1}}
+Content-Type: {{contentType}}
+
+{
+  "rating": -2
+}
+
+
+### 4.3 ÉCHEC : Mettre à jour un avis inexistant (404 Not Found)
+PATCH {{baseUrl}}/reviews/rev_inexistant
+Content-Type: {{contentType}}
+
+{
+  "comment": "Test"
+}
+
+
+###############################################################################
+# 5. TESTS DU CALCUL DE AverageRating ET reviewCount (Intégration Places)
+###############################################################################
+
+### 5.1 Vérifier les statistiques du lieu après création et modification des avis
+# Attendu : reviewCount = 2, averageRating = 3.0 (moyenne entre 5 et 1)
+GET {{baseUrl}}/places/{{placeId}}
+
+
+### 5.2 Supprimer un avis
+DELETE {{baseUrl}}/reviews/{{reviewId2}}
+
+
+### 5.3 Vérifier la mise à jour automatique des statistiques après suppression
+# Attendu : reviewCount = 1, averageRating = 5.0
+GET {{baseUrl}}/places/{{placeId}}
+
+
+### 5.4 Tenter de supprimer le bâtiment contenant encore un avis (ÉCHEC 409 Conflict)
+# Conformément à la logique ConflictException dans PlacesService
+DELETE {{baseUrl}}/places/{{placeId}}
+
+
+### 5.5 Supprimer le dernier avis du lieu
+DELETE {{baseUrl}}/reviews/{{reviewId1}}
+
+
+### 5.6 Vérifier le lieu à nouveau sans aucun avis
+# Attendu : reviewCount = 0, averageRating = null
+GET {{baseUrl}}/places/{{placeId}}
+
+
+### 5.7 Supprimer le lieu maintenant qu'il n'a plus d'avis (204 No Content)
+DELETE {{baseUrl}}/places/{{placeId}}
+
+
+###############################################################################
+# 6. SUPPRESSION D'AVIS - CAS D'ERREUR (DELETE /reviews/:id)
+###############################################################################
+
+### 6.1 ÉCHEC : Supprimer un avis inexistant (404 Not Found)
+DELETE {{baseUrl}}/reviews/rev_inexistant
