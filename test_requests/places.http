@@ -1,0 +1,170 @@
+### Variables globales
+@baseUrl = http://localhost:3000/api/v1
+@contentType = application/json
+
+###############################################################################
+# 1. CRÉATION (POST /places)
+###############################################################################
+
+### 1.1 Créer un lieu valide (Complet)
+# @name createPlace
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Bibliothèque Centrale",
+  "description": "Grand espace de travail calme avec accès Wi-Fi haut débit et prises partout.",
+  "category": "LIBRARY",
+  "address": "1234 Rue de l'Université, Montréal",
+  "services": ["Wi-Fi", "Prises électriques", "Imprimante", "Salles d'étude"],
+  "status": "ACTIVE"
+}
+
+### Stocker l'ID généré pour les tests suivants
+@createdPlaceId = {{createPlace.response.body.id}}
+
+
+### 1.2 Créer un lieu valide (Champs optionnels omis - Valeurs par défaut)
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Café Étudiant Le Mâtin",
+  "description": "Café convivial pour travailler en groupe ou faire une pause.",
+  "category": "FOOD_SERVICE",
+  "address": "5678 Boulevard René-Lévesque, Montréal"
+}
+
+
+### 1.3 ÉCHEC : Validation - Champs requis manquants
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Lieu Incomplet"
+}
+
+
+### 1.4 ÉCHEC : Validation - Catégorie invalide (Enum)
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Salle de Sport",
+  "description": "Gym du campus.",
+  "category": "INVALID_CATEGORY",
+  "address": "100 Rue des Sports"
+}
+
+
+### 1.5 ÉCHEC : Validation - Description trop longue (> 300 caractères)
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Lieu au texte trop long",
+  "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.",
+  "category": "STUDY_SPACE",
+  "address": "200 Rue Exemple"
+}
+
+
+### 1.6 ÉCHEC : Validation - Éléments en double dans 'services' (@ArrayUnique)
+POST {{baseUrl}}/places
+Content-Type: {{contentType}}
+
+{
+  "name": "Labo Informatique",
+  "description": "Postes de travail disponibles.",
+  "category": "COMPUTER_LAB",
+  "address": "Pavillon A, Local 300",
+  "services": ["Wi-Fi", "Wi-Fi", "PC"]
+}
+
+
+###############################################################################
+# 2. LECTURE (GET /places)
+###############################################################################
+
+### 2.1 Obtenir tous les lieux (Pagination par défaut : page=1, limit=10)
+GET {{baseUrl}}/places
+
+
+### 2.2 Obtenir les lieux avec pagination personnalisée
+GET {{baseUrl}}/places?page=1&limit=2
+
+
+### 2.3 Filtrer par catégorie
+GET {{baseUrl}}/places?category=LIBRARY
+
+
+### 2.4 Filtrer par catégorie ET paginer
+GET {{baseUrl}}/places?category=FOOD_SERVICE&page=1&limit=5
+
+
+### 2.5 ÉCHEC : Pagination invalide (page < 1)
+GET {{baseUrl}}/places?page=0
+
+
+### 2.6 ÉCHEC : Pagination invalide (limit > 100)
+GET {{baseUrl}}/places?limit=150
+
+
+###############################################################################
+# 3. LECTURE PAR ID (GET /places/:id)
+###############################################################################
+
+### 3.1 Obtenir un lieu existant par son ID
+GET {{baseUrl}}/places/{{createdPlaceId}}
+
+
+### 3.2 ÉCHEC : Obtenir un lieu inexistant (404 Not Found)
+GET {{baseUrl}}/places/plc_non_existant
+
+
+###############################################################################
+# 4. MISES À JOUR (PATCH /places/:id)
+###############################################################################
+
+### 4.1 Mettre à jour partiellement un lieu
+PATCH {{baseUrl}}/places/{{createdPlaceId}}
+Content-Type: {{contentType}}
+
+{
+  "description": "Mise à jour : Fermeture exceptionnelle des salles de groupe.",
+  "status": "TEMPORARILY_CLOSED"
+}
+
+
+### 4.2 ÉCHEC : Mettre à jour avec une valeur invalide
+PATCH {{baseUrl}}/places/{{createdPlaceId}}
+Content-Type: {{contentType}}
+
+{
+  "status": "STATUS_INVALIDE"
+}
+
+
+### 4.3 ÉCHEC : Mettre à jour un lieu inexistant (404 Not Found)
+PATCH {{baseUrl}}/places/plc_inexistant
+Content-Type: {{contentType}}
+
+{
+  "name": "Nouveau Nom"
+}
+
+
+###############################################################################
+# 5. SUPPRESSION (DELETE /places/:id)
+###############################################################################
+
+### 5.1 Supprimer un lieu existant (204 No Content)
+DELETE {{baseUrl}}/places/{{createdPlaceId}}
+
+
+### 5.2 ÉCHEC : Supprimer un lieu inexistant (404 Not Found)
+DELETE {{baseUrl}}/places/plc_inexistant
+
+
+### 5.3 Vérifier que le lieu supprimé n'existe plus (404 Not Found)
+GET {{baseUrl}}/places/{{createdPlaceId}}
