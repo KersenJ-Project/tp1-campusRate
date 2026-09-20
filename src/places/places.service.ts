@@ -4,6 +4,8 @@ import { UpdatePlaceDto } from './dto/update-place.dto';
 import { Place } from './entities/place.entity';
 import { PlaceStatus } from './enums/placeStatus.enum';
 import { randomUUID } from 'crypto';
+import { GetPlacesDto } from './dto/get-places.dto';
+import type { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 
 @Injectable()
 export class PlacesService {
@@ -26,8 +28,28 @@ export class PlacesService {
     return newPlace
   }
 
-  findAll() {
-    return this.places;
+  findAll(queryDto: GetPlacesDto): PaginatedResult<Place> {
+    const { category, page = 1, limit = 10 } = queryDto
+
+    let filteredPlaces = this.places
+    if (category) {
+      filteredPlaces = filteredPlaces.filter((place) => place.category === category)
+    }
+
+    const totalItems = filteredPlaces.length
+    const totalPages = Math.ceil(totalItems / limit)
+    const skip = (page - 1) * limit
+    const paginatedResult = filteredPlaces.slice(skip, skip + limit)
+
+    return {
+      data: paginatedResult,
+      pagination: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      }
+    }
   }
 
   findOne(id: string) {
