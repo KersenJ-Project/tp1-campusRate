@@ -2,13 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './entities/review.entity';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ReviewsService {
   private reviews: Review[] = []
 
-  create(createReviewDto: CreateReviewDto) {
-    return 'This action adds a new review';
+  create(placeId: string, createReviewDto: CreateReviewDto) {
+    if (!placeId) {
+      throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
+    }
+    const now = new Date().toISOString()
+    const newReview: Review = {
+      id: `rev_${randomUUID().substring(0, 8)}`,
+      placeId: placeId,
+      ...createReviewDto,
+      createdAt: now,
+      updatedAt: now
+    }
+
+    this.reviews.push(newReview)
+    return newReview
   }
 
   findAll() {

@@ -8,8 +8,8 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post()
-  create(@Body() createReviewDto: CreateReviewDto) {
-    return this.reviewsService.create(createReviewDto);
+  create(@Param("placeId") placeId: string, @Body() createReviewDto: CreateReviewDto) {
+    return this.reviewsService.create(placeId, createReviewDto);
   }
 
   @Get()
