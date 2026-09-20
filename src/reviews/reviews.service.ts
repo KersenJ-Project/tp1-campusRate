@@ -37,11 +37,16 @@ export class ReviewsService {
     return review
   }
 
-  update(i: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${i} review`;
+  update(id: number, updateReviewDto: UpdateReviewDto) {
+    return `This action updates a #${id} review`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} review`;
+  remove(id: string) {
+    const index: number =  this.reviews.findIndex((review: Review) => review.id === id);
+    if(index === -1){
+      throw new NotFoundException(`La critique avec l'ID "${id}" n'existe pas.`);
+    }
+
+    this.reviews.splice(index, 1);
   }
 }
