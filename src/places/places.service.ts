@@ -89,8 +89,19 @@ export class PlacesService {
     return nbReviews;
   }
 
+  calculateAverageRating(placeId: string): number {
+    const place = this.findOne(placeId)
+    const reviews = this.reviewsService.findByPlace(placeId)
+    const sumRatings = reviews.reduce((sum, review) => sum + review.rating, 0)
+    const averageRating = sumRatings / reviews.length || 0
+
+    place.averageRating = averageRating
+    return averageRating;
+  }
+
   @OnEvent('review.changed')
   handleReviewChangedEvent(payload: { placeId: string }) {
     this.calculateReviewCount(payload.placeId);
+    this.calculateAverageRating(payload.placeId);
   }
 }
