@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { Place } from './entities/place.entity';
@@ -78,6 +78,10 @@ export class PlacesService {
       throw new NotFoundException(`Le bâtiment avec l'ID "${id}" n'existe pas.`);
     }
 
+    if (this.reviewsService.findByPlace(id).length > 0) {
+      throw new ConflictException(`Le bâtiment avec l'ID "${id}" ne peut pas être supprimé car il a des critiques associées.`);
+    }
+
     this.places.splice(index, 1);
   }
 
@@ -92,8 +96,14 @@ export class PlacesService {
   calculateAverageRating(placeId: string): number {
     const place = this.findOne(placeId)
     const reviews = this.reviewsService.findByPlace(placeId)
+
+    if (reviews.length === 0) {
+      place.averageRating = null
+      return 0;
+    }
+
     const sumRatings = reviews.reduce((sum, review) => sum + review.rating, 0)
-    const averageRating = sumRatings / reviews.length || 0
+    const averageRating = Number((sumRatings / reviews.length).toFixed(1))
 
     place.averageRating = averageRating
     return averageRating;
@@ -101,7 +111,11 @@ export class PlacesService {
 
   @OnEvent('review.changed')
   handleReviewChangedEvent(payload: { placeId: string }) {
-    this.calculateReviewCount(payload.placeId);
-    this.calculateAverageRating(payload.placeId);
+    try{
+      this.calculateReviewCount(payload.placeId);
+      this.calculateAverageRating(payload.placeId);
+    } catch (error) {
+      console.error('Error occurred while handling review changed event:', error);
+    }
   }
 }
