@@ -42,7 +42,12 @@ export class PlacesService {
     return `This action updates a #${id} place`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} place`;
+  remove(id: string) {
+    const index: number =  this.places.findIndex((place: Place) => place.id === id);
+    if(index === -1){
+      throw new NotFoundException(`Le bâtiment avec l'ID "${id}" n'existe pas.`);
+    }
+
+    this.places.splice(index, 1);
   }
 }

@@ -29,6 +29,6 @@ export class PlacesController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.placesService.remove(+id);
+    return this.placesService.remove(id);
   }
 }
