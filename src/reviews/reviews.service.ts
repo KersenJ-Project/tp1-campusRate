@@ -37,8 +37,12 @@ export class ReviewsService {
     return review
   }
 
-  update(id: number, updateReviewDto: UpdateReviewDto) {
-    return `This action updates a #${id} review`;
+  update(id: string, updateReviewDto: UpdateReviewDto) {
+    const review: Review = this.findOne(id)
+    Object.assign(review,updateReviewDto)
+    review.updatedAt = new Date().toISOString()
+
+    return review
   }
 
   remove(id: string) {
