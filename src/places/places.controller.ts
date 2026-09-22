@@ -12,7 +12,7 @@ export class PlacesController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createPlaceDto: CreatePlaceDto): Place {
+  async create(@Body() createPlaceDto: CreatePlaceDto): Promise<Place> {
     return this.placesService.create(createPlaceDto);
   }
 
@@ -27,13 +27,13 @@ export class PlacesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto): Place {
+  async update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto): Promise<Place> {
     return this.placesService.update(id, updatePlaceDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string): void {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.placesService.remove(id);
   }
 }

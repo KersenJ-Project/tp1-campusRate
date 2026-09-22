@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { CreatePlaceDto } from './dto/create-place.dto';
 import { UpdatePlaceDto } from './dto/update-place.dto';
 import { Place } from './entities/place.entity';
@@ -8,15 +8,57 @@ import { GetPlacesDto } from './dto/get-places.dto';
 import type { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 import { ReviewsService } from '../reviews/reviews.service';
 import { OnEvent } from '@nestjs/event-emitter';
+import { promises as fs } from 'fs';
+import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class PlacesService {
+export class PlacesService implements OnModuleInit {
 
   private places: Place[] = []
+  private readonly filePath: string
+  private writeQueue: Promise<void> = Promise.resolve()
 
-  constructor(private readonly reviewsService: ReviewsService) {}
+  constructor(private readonly reviewsService: ReviewsService, private readonly configService: ConfigService) {
+    const envPath = this.configService.get<string>("PLACES_FILE_PATH")!
 
-  create(createPlaceDto: CreatePlaceDto) {
+    this.filePath = path.resolve(process.cwd(), envPath)
+  }
+
+  async onModuleInit(){
+    await this.loadFromFile()
+  }
+
+  private async loadFromFile(): Promise<void>{
+    try{
+      const content = await fs.readFile(this.filePath, "utf-8")
+      this.places = content.trim()? JSON.parse(content) : []
+    } catch(err : any){
+      if(err.code === "ENOENT"){
+        await fs.mkdir(path.dirname(this.filePath), {recursive : true})
+        this.places = []
+        await this.saveToFile()
+      } else {
+        throw err
+      }
+    }
+  }
+
+  private saveToFile(): Promise<void> {
+    const snapshot = JSON.stringify(this.places, null, 2)
+
+    this.writeQueue = this.writeQueue
+    .catch(() => undefined)
+    .then(async () => {
+      const tmp = `${this.filePath}.tmp`
+      await fs.writeFile(tmp, snapshot, "utf-8")
+      await fs.rename(tmp, this.filePath)
+    })
+
+    return this.writeQueue
+  }
+
+  async create(createPlaceDto: CreatePlaceDto) {
     const now = new Date().toISOString()
     const newPlace: Place = {
       id: `plc_${randomUUID().substring(0, 8)}`,
@@ -29,6 +71,8 @@ export class PlacesService {
       updatedAt: now
     }
     this.places.push(newPlace)
+
+    await this.saveToFile()
     return newPlace
   }
 
@@ -64,15 +108,16 @@ export class PlacesService {
     return place
   }
 
-  update(id: string, updatePlaceDto: UpdatePlaceDto) {
+  async update(id: string, updatePlaceDto: UpdatePlaceDto) {
     const place: Place = this.findOne(id)
     Object.assign(place,updatePlaceDto)
     place.updatedAt = new Date().toISOString()
+    await this.saveToFile()
 
     return place
   }
 
-  remove(id: string) {
+  async remove(id: string) {
     const index: number =  this.places.findIndex((place: Place) => place.id === id);
     if(index === -1){
       throw new NotFoundException(`Le bâtiment avec l'ID "${id}" n'existe pas.`);
@@ -83,6 +128,8 @@ export class PlacesService {
     }
 
     this.places.splice(index, 1);
+
+    await this.saveToFile()
   }
 
   calculateReviewCount(placeId: string): number {
@@ -110,10 +157,12 @@ export class PlacesService {
   }
 
   @OnEvent('review.changed')
-  handleReviewChangedEvent(payload: { placeId: string }) {
+  async handleReviewChangedEvent(payload: { placeId: string }) {
     try{
       this.calculateReviewCount(payload.placeId);
       this.calculateAverageRating(payload.placeId);
+
+      await this.saveToFile()
     } catch (error) {
       console.error('Error occurred while handling review changed event:', error);
     }

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "plc_a9450a23",
+    "name": "Café Étudiant Le Mâtin",
+    "description": "Café convivial pour travailler en groupe ou faire une pause.",
+    "category": "FOOD_SERVICE",
+    "address": "5678 Boulevard René-Lévesque, Montréal",
+    "services": [],
+    "status": "ACTIVE",
+    "averageRating": null,
+    "reviewCount": 0,
+    "createdAt": "2026-09-22T01:38:08.809Z",
+    "updatedAt": "2026-09-22T01:38:08.809Z"
+  }
+]
