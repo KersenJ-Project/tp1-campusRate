@@ -57,6 +57,10 @@ export class ReviewsService implements OnModuleInit {
       throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
     }
 
+    if(this.findOne(placeId)){
+      throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
+    }
+
     const now = new Date().toISOString()
     const newReview: Review = {
       id: `rev_${randomUUID().substring(0, 8)}`,

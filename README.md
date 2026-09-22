@@ -1,114 +1,110 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# CampusRate
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+CampusRate est une API REST permettant aux étudiants et/ou au personnel d'un campus de **noter des lieux** (restaurants, résidences, bibliothèques, services administratifs, etc.), afin d'aider les gens d'avoir une idee.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Objectif
 
-## Description
+Centraliser les avis sur les différents endroits d'un campus. Chaque lieu (`Place`) peut recevoir plusieurs critiques (`Review`), et sa note moyenne ainsi que son nombre d'avis sont recalculés automatiquement à chaque création, modification ou suppression d'un avis.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Fonctionnalités
 
-## Project setup
+- **Gestion des lieux (`/places`)**
+  - Création, consultation, mise à jour et suppression d'un lieu
+  - Catégorisation (`category`) et statut (`status`, ex. actif/inactif)
+  - Liste des lieux avec **pagination** et **filtrage par catégorie**
+  - Suppression bloquée si le lieu possède encore des critiques associées
+- **Gestion des critiques (`/reviews`)**
+  - Création, consultation, mise à jour et suppression d'un avis attaché à un lieu
+  - Calculation automatique de la note moyenne et du nombre d'avis d'un lieu à chaque changement, grace un système d'événements internes
+- **Persistance simple par fichiers JSON**, avec écritures atomiques (fichier temporaire puis renommage)
+- **Réponses d'erreur normalisées** au format `application/problem+json` (RFC 7807), grace un filtre d'exceptions
 
-```bash
-$ npm install
-```
+## Technologies
 
-## Compile and run the project
+- [NestJS](https://nestjs.com/) (Node.js / TypeScript)
+- [Express](https://expressjs.com/) comme adaptateur HTTP sous-jacent
+- `@nestjs/event-emitter` pour la communication événementielle entre les modules `Places` et `Reviews`
+- Stockage sur disque au format **JSON** (pas de base de données pour cette première version)
+- [Swagger / OpenAPI](https://docs.nestjs.com/openapi/introduction) pour la documentation interactive de l'API
 
-```bash
-# development
-$ npm run start
+## Prérequis
 
-# watch mode
-$ npm run start:dev
+- Node.js
+- npm
 
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+## Installation
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone <url-du-repo>
+cd campusrate
+npm install
 ```
 
-## Deployment
+## Configuration
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+CampusRate utilise des fichiers JSON comme source de vérité pour les lieux et les critiques. Les chemins de ces fichiers sont définis via des variables d'environnement.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Créez un fichier `.env` à la racine du projet :
+
+```env
+PLACES_FILE_PATH=data/places.json
+REVIEWS_FILE_PATH=data/reviews.json
+PORT=port_utilise
+```
+
+> Le répertoire data et les fichiers json seront crées automatiquement. 
+
+Vous pouvez aussi copier le fichier .env avec cette commande:
+```bash
+cp .env.example .env
+```
+
+## Démarrage
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# mode développement (avec rechargement à chaud)
+npm run start:dev
+
+# mode production
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Lint
 
-## Observability
+```bash
+# Vérification du code avec ESLint
+npm run lint
+```
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+## Compilation (build)
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+```bash
+# Le code compilé est généré dans le dossier `dist/`.
+npm run build
+```
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
 
-## Resources
+## Documentation Swagger UI
 
-Check out a few resources that may come in handy when working with NestJS:
+Une fois le serveur démarré, la documentation interactive de l'API est disponible à l'adresse :
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+http://localhost:3000/api
+```
 
-## Support
+Elle permet d'explorer et de tester chacun des points de terminaison (`Places`, `Reviews`) directement depuis le navigateur.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Contrat général de l'API
 
-## Stay in touch
+- Toutes les réponses en erreur suivent le format **Problem Details** (`application/problem+json`).
+- Les listes paginées (ex. `GET /places`) renvoient un objet contenant :
+  - `data` : le tableau des éléments de la page courante
+  - `pagination` : `page`, `limit`, `totalItems`, `totalPages`
+- Les identifiants sont préfixés par ressource (ex. `plc_a1b2c3` pour un lieu, `rev_a1b2c3` pour une critique).
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Limites connues
 
-## License
+- La persistance repose sur de simples fichiers JSON locaux : elle ne convient pas à un usage multi-instance ou à fort volume de données, et ne remplace pas une base de données.
+- Aucune authentification ni autorisation n'est actuellement implémentée : tous les points de terminaison sont ouverts.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
