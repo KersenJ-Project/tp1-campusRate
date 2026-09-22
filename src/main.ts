@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 
 async function bootstrap() {
   
@@ -19,6 +20,8 @@ async function bootstrap() {
       transform: true,
     })
   )
+
+  app.useGlobalFilters(new ProblemDetailsFilter());
   
   await app.listen(process.env.PORT!);
 }
