@@ -9,7 +9,7 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @Post()
-  create(@Query('placeId') placeId: string, @Body() createReviewDto: CreateReviewDto) {
+  async create(@Query('placeId') placeId: string, @Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(placeId, createReviewDto);
   }
 
@@ -24,12 +24,12 @@ export class ReviewsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto): Review {
+  async update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto): Promise<Review> {
     return this.reviewsService.update(id, updateReviewDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): void {
+  async remove(@Param('id') id: string): Promise<void> {
     return this.reviewsService.remove(id);
   }
   

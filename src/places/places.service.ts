@@ -10,17 +10,15 @@ import { ReviewsService } from '../reviews/reviews.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PlacesService implements OnModuleInit {
-
   private places: Place[] = []
   private readonly filePath: string
   private writeQueue: Promise<void> = Promise.resolve()
 
-  constructor(private readonly reviewsService: ReviewsService, private readonly configService: ConfigService) {
-    const envPath = this.configService.get<string>("PLACES_FILE_PATH")!
+  constructor(private readonly reviewsService: ReviewsService) {
+    const envPath = process.env.PLACES_FILE_PATH!
 
     this.filePath = path.resolve(process.cwd(), envPath)
   }
