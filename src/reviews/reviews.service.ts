@@ -54,11 +54,7 @@ export class ReviewsService implements OnModuleInit {
 
   async create(placeId: string, createReviewDto: CreateReviewDto) {
     if (!placeId) {
-      throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
-    }
-
-    if(this.findOne(placeId)){
-      throw new NotFoundException(`L'id de l'endroit est requis pour créer une critique.`)
+      throw new NotFoundException(`L'id de l'endroit est requis pour créer un avis.`)
     }
 
     const now = new Date().toISOString()
@@ -85,7 +81,7 @@ export class ReviewsService implements OnModuleInit {
   findOne(id: string) {
     const review = this.reviews.find((r) => r.id === id)
     if(!review){
-      throw new NotFoundException(`La critique avec l'id '${id}' n'existe pas.`)
+      throw new NotFoundException(`L'avis avec l'id '${id}' n'existe pas.`)
     }
     return review
   }
@@ -102,7 +98,7 @@ export class ReviewsService implements OnModuleInit {
   async remove(id: string) {
     const index: number =  this.reviews.findIndex((review: Review) => review.id === id);
     if(index === -1){
-      throw new NotFoundException(`La critique avec l'ID "${id}" n'existe pas.`);
+      throw new NotFoundException(`L'avis avec l'ID "${id}" n'existe pas.`);
     }
 
     const deletedReview = this.reviews.splice(index, 1)[0];

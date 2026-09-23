@@ -5,7 +5,7 @@ import { Place } from './entities/place.entity';
 import { PlaceStatus } from './enums/placeStatus.enum';
 import { randomUUID } from 'crypto';
 import { GetPlacesDto } from './dto/get-places.dto';
-import type { PaginatedResult } from '../common/interfaces/paginated-result.interface';
+import type { PaginatedResultDto } from '../common/interfaces/paginated-result.interface';
 import { ReviewsService } from '../reviews/reviews.service';
 import { OnEvent } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
@@ -74,7 +74,7 @@ export class PlacesService implements OnModuleInit {
     return newPlace
   }
 
-  findAll(queryDto: GetPlacesDto): PaginatedResult<Place> {
+  findAll(queryDto: GetPlacesDto): PaginatedResultDto<Place> {
     const { category, page = 1, limit = 10 } = queryDto
 
     let filteredPlaces = this.places
@@ -122,7 +122,7 @@ export class PlacesService implements OnModuleInit {
     }
 
     if (this.reviewsService.findByPlace(id).length > 0) {
-      throw new ConflictException(`Le bâtiment avec l'ID "${id}" ne peut pas être supprimé car il a des critiques associées.`);
+      throw new ConflictException(`Le bâtiment avec l'ID "${id}" ne peut pas être supprimé car il a des avis associées.`);
     }
 
     this.places.splice(index, 1);

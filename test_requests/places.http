@@ -1,12 +1,7 @@
-### Variables globales
 @baseUrl = http://localhost:3000/api/v1
 @contentType = application/json
 
-###############################################################################
-# 1. CRÉATION (POST /places)
-###############################################################################
-
-### 1.1 Créer un lieu valide (Complet)
+### On crée un lieu complet, avec tous les champs
 # @name createPlace
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
@@ -20,11 +15,10 @@ Content-Type: {{contentType}}
   "status": "ACTIVE"
 }
 
-### Stocker l'ID généré pour les tests suivants
+###
 @createdPlaceId = {{createPlace.response.body.id}}
 
-
-### 1.2 Créer un lieu valide (Champs optionnels omis - Valeurs par défaut)
+### Un lieu valide, mais sans les champs optionnels
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
 
@@ -35,17 +29,13 @@ Content-Type: {{contentType}}
   "address": "5678 Boulevard René-Lévesque, Montréal"
 }
 
-
-### 1.3 ÉCHEC : Validation - Champs requis manquants
+### Il manque des champs obligatoires, ça doit échouer
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
 
-{
-  "name": "Lieu Incomplet"
-}
+{ "name": "Lieu Incomplet" }
 
-
-### 1.4 ÉCHEC : Validation - Catégorie invalide (Enum)
+### On envoie une catégorie invalide (pas dans l'enum)
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
 
@@ -56,8 +46,7 @@ Content-Type: {{contentType}}
   "address": "100 Rue des Sports"
 }
 
-
-### 1.5 ÉCHEC : Validation - Description trop longue (> 300 caractères)
+### La description dépasse la limite de 300 caractères
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
 
@@ -68,8 +57,7 @@ Content-Type: {{contentType}}
   "address": "200 Rue Exemple"
 }
 
-
-### 1.6 ÉCHEC : Validation - Éléments en double dans 'services' (@ArrayUnique)
+### Il y a un doublon dans 'services', ça doit échouer (@ArrayUnique)
 POST {{baseUrl}}/places
 Content-Type: {{contentType}}
 
@@ -81,52 +69,31 @@ Content-Type: {{contentType}}
   "services": ["Wi-Fi", "Wi-Fi", "PC"]
 }
 
-
-###############################################################################
-# 2. LECTURE (GET /places)
-###############################################################################
-
-### 2.1 Obtenir tous les lieux (Pagination par défaut : page=1, limit=10)
+### On récupère tous les lieux, pagination par défaut
 GET {{baseUrl}}/places
 
-
-### 2.2 Obtenir les lieux avec pagination personnalisée
+### Pagination personnalisée
 GET {{baseUrl}}/places?page=1&limit=2
 
-
-### 2.3 Filtrer par catégorie
+### On filtre par catégorie
 GET {{baseUrl}}/places?category=LIBRARY
 
-
-### 2.4 Filtrer par catégorie ET paginer
+### On filtre par catégorie et on pagine en même temps
 GET {{baseUrl}}/places?category=FOOD_SERVICE&page=1&limit=5
 
-
-### 2.5 ÉCHEC : Pagination invalide (page < 1)
+### Pagination invalide : page < 1
 GET {{baseUrl}}/places?page=0
 
-
-### 2.6 ÉCHEC : Pagination invalide (limit > 100)
+### Pagination invalide : limit > 100
 GET {{baseUrl}}/places?limit=150
 
-
-###############################################################################
-# 3. LECTURE PAR ID (GET /places/:id)
-###############################################################################
-
-### 3.1 Obtenir un lieu existant par son ID
+### On va chercher un lieu existant par son ID
 GET {{baseUrl}}/places/{{createdPlaceId}}
 
-
-### 3.2 ÉCHEC : Obtenir un lieu inexistant (404 Not Found)
+### Le lieu n'existe pas, on doit avoir un 404
 GET {{baseUrl}}/places/plc_non_existant
 
-
-###############################################################################
-# 4. MISES À JOUR (PATCH /places/:id)
-###############################################################################
-
-### 4.1 Mettre à jour partiellement un lieu
+### Mise à jour partielle d'un lieu
 PATCH {{baseUrl}}/places/{{createdPlaceId}}
 Content-Type: {{contentType}}
 
@@ -135,36 +102,23 @@ Content-Type: {{contentType}}
   "status": "TEMPORARILY_CLOSED"
 }
 
-
-### 4.2 ÉCHEC : Mettre à jour avec une valeur invalide
+### On envoie un statut invalide, ça doit échouer
 PATCH {{baseUrl}}/places/{{createdPlaceId}}
 Content-Type: {{contentType}}
 
-{
-  "status": "STATUS_INVALIDE"
-}
+{ "status": "STATUS_INVALIDE" }
 
-
-### 4.3 ÉCHEC : Mettre à jour un lieu inexistant (404 Not Found)
+### On essaie de mettre à jour un lieu qui n'existe pas (404)
 PATCH {{baseUrl}}/places/plc_inexistant
 Content-Type: {{contentType}}
 
-{
-  "name": "Nouveau Nom"
-}
+{ "name": "Nouveau Nom" }
 
-
-###############################################################################
-# 5. SUPPRESSION (DELETE /places/:id)
-###############################################################################
-
-### 5.1 Supprimer un lieu existant (204 No Content)
+### On supprime le lieu créé plus haut (204 attendu)
 DELETE {{baseUrl}}/places/{{createdPlaceId}}
 
-
-### 5.2 ÉCHEC : Supprimer un lieu inexistant (404 Not Found)
+### On essaie de supprimer un lieu qui n'existe pas (404)
 DELETE {{baseUrl}}/places/plc_inexistant
 
-
-### 5.3 Vérifier que le lieu supprimé n'existe plus (404 Not Found)
+### Verification finale : le lieu supprimé doit bien être introuvable (404)
 GET {{baseUrl}}/places/{{createdPlaceId}}
