@@ -42,7 +42,7 @@ npm install
 
 ## Configuration
 
-CampusRate utilise des fichiers JSON comme source de vérité pour les lieux et les critiques. Les chemins de ces fichiers sont définis via des variables d'environnement.
+CampusRate utilise des fichiers JSON pour stocker les lieux et les critiques. Les chemins de ces fichiers sont définis grace des variables d'environnement.
 
 Créez un fichier `.env` à la racine du projet :
 
@@ -104,7 +104,7 @@ Elle permet d'explorer et de tester chacun des points de terminaison (`Places`, 
 
 ## Limites connues
 
-- La persistance repose sur de simples fichiers JSON locaux : elle ne convient pas à un usage multi-instance ou à fort volume de données, et ne remplace pas une base de données.
+- La persistance repose sur de simples fichiers JSON locaux : elle ne convient pas à un usage avancé ni a une application avec beaucoup de données, et surtout elle ne remplace pas une base de données.
 - Aucune authentification ni autorisation n'est actuellement implémentée : tous les points de terminaison sont ouverts.
 
 ---
