@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PlaceCategory } from '../enums/placeCategory.enum';
 
@@ -9,8 +9,8 @@ export class GetPlacesDto {
     enum: PlaceCategory,
   })
   @IsOptional()
-  @IsString()
-  category?: string;
+  @IsEnum(PlaceCategory)
+  category?: PlaceCategory;
 
   @ApiPropertyOptional({
     description: 'Numéro de la page à récupérer.',

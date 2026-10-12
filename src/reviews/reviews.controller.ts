@@ -7,7 +7,7 @@ import { Review } from './entities/review.entity';
 import { ProblemDetailsDto } from '../common/dto/problem-details.dto';
 import type { Response } from 'express';
 
-@ApiTags('reviews')
+@ApiTags('Appréciations')
 @Controller('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}

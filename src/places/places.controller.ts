@@ -9,7 +9,7 @@ import { ProblemDetailsDto } from '../common/dto/problem-details.dto';
 import type { Response } from 'express';
 import { PaginatedResultDto } from '../common/interfaces/paginated-result.interface';
 
-@ApiTags('Places')
+@ApiTags('Endroits')
 @ApiExtraModels(PaginatedResultDto, Place)
 @Controller('places')
 export class PlacesController {
