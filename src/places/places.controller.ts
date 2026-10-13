@@ -8,8 +8,9 @@ import { Place } from './entities/place.entity';
 import { ProblemDetailsDto } from '../common/dto/problem-details.dto';
 import type { Response } from 'express';
 import { PaginatedResultDto } from '../common/interfaces/paginated-result.interface';
+import { Place as PlaceSchema } from './schemas/place.schema';
 
-@ApiTags('Endroits')
+@ApiTags('Places')
 @ApiExtraModels(PaginatedResultDto, Place)
 @Controller('places')
 export class PlacesController {
@@ -20,10 +21,10 @@ export class PlacesController {
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Le lieu a été créé avec succès.', type: Place })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Données fournies invalides.', type: ProblemDetailsDto })
   @ApiHeader({ name: 'Location', description: 'URI de la ressource créée (ex: /api/v1/places/plc_12345678).' })
-  async create(@Body() createPlaceDto: CreatePlaceDto, @Res({ passthrough: true }) response: Response): Promise<Place> {
+  async create(@Body() createPlaceDto: CreatePlaceDto, @Res({ passthrough: true }) response: Response): Promise<PlaceSchema> {
     const newPlace = await this.placesService.create(createPlaceDto);
 
-    response.setHeader('Location', `/api/v1/places/${newPlace.id}`);
+    response.setHeader('Location', `/api/v1/places/${newPlace._id}`);
     response.status(HttpStatus.CREATED);
 
     return newPlace;
@@ -48,7 +49,7 @@ export class PlacesController {
       ],
     },
   })
-  async findAll(@Query() queryDto: GetPlacesDto): Promise<PaginatedResultDto<Place>> {
+  async findAll(@Query() queryDto: GetPlacesDto): Promise<PaginatedResultDto<PlaceSchema>> {
     return await this.placesService.findAll(queryDto);
   }
 
@@ -56,7 +57,7 @@ export class PlacesController {
   @ApiOperation({ summary: 'Récupérer un lieu par son identifiant.' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Lieu trouvé.', type: Place })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Lieu introuvable.', type: ProblemDetailsDto })
-  async findOne(@Param('id') id: string): Promise<Place> {
+  async findOne(@Param('id') id: string): Promise<PlaceSchema> {
     return await this.placesService.findOne(id);
   }
 
@@ -65,7 +66,7 @@ export class PlacesController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Lieu mis à jour avec succès.', type: Place })
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Données fournies invalides.', type: ProblemDetailsDto })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Lieu introuvable.', type: ProblemDetailsDto })
-  async update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto): Promise<Place> {
+  async update(@Param('id') id: string, @Body() updatePlaceDto: UpdatePlaceDto): Promise<PlaceSchema> {
     return await this.placesService.update(id, updatePlaceDto);
   }
 
