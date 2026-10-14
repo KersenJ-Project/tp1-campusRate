@@ -3,11 +3,14 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 import { configureSwagger } from './configure-swagger';
+import helmet from 'helmet';
 
 async function bootstrap() {
   
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
+
+  app.use(helmet());
   
   app.enableVersioning({
     type: VersioningType.URI,
