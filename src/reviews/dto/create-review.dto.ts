@@ -8,6 +8,7 @@ export class CreateReviewDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   authorName: string;
 
   @ApiProperty({
