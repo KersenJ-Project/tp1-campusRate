@@ -11,6 +11,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.use(helmet());
+
+  app.enableCors({
+    origin: ['http://localhost:5173'],
+    methods: ['GET','POST','DELETE','PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
   
   app.enableVersioning({
     type: VersioningType.URI,
