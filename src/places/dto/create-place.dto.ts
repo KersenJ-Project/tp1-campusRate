@@ -10,6 +10,7 @@ export class CreatePlaceDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(150)
   name: string;
 
   @ApiProperty({
@@ -37,6 +38,7 @@ export class CreatePlaceDto {
   })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(300)
   address: string;
 
   @ApiPropertyOptional({
@@ -48,6 +50,7 @@ export class CreatePlaceDto {
   @IsArray()
   @ArrayUnique()
   @IsString({ each: true })
+  @MaxLength(100, {each: true})
   services?: string[];
 
   @ApiPropertyOptional({
