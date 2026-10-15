@@ -136,4 +136,9 @@ Toute propriété inconnue ou interdite est refusée avec une erreur **400**. Le
 - Le certificat HTTPS est autosigné : il convient uniquement au développement local, jamais à la production.
 - Les certificats ne sont pas versionnés : il faut les générer avant le premier démarrage (sans eux, l'API ne démarre pas).
 
----
+## Choix de modélisation : références
+
+Les avis sont stockés dans une collection `reviews` distincte, avec `placeId` qui référence le lieu, plutôt qu'imbriqués dans le document du lieu. 
+Le nombre d'avis par lieu n'est pas fixe, donc un tableau imbriqué pourrait dépasser la limite de 16 Mo d'un document MongoDB. 
+Les avis sont aussi consultés et modifiés indépendamment, ce qui obligerait à réécrire tout le lieu à chaque modification s'ils étaient imbriqués. 
+Un index sur `placeId` accélère la recherche des avis d'un lieu. 
