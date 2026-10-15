@@ -15,7 +15,7 @@ export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService, private readonly reviewsRepository: ReviewsRepository,) {}
 
   @Post()
-  @ApiOperation({ summary: 'Créer un nouvel avis pour un lieu' })
+  @ApiOperation({ summary: 'Créer un nouvel avis pour un lieu', description: 'Vas mettre à jour reviewCount et averageRating du lieu concerné.' })
   @ApiQuery({ name: 'placeId', required: true, description: "L'identifiant unique du lieu concerné", example: 'plc_91cc99fd' })
   @ApiResponse({ status: HttpStatus.CREATED, description: "L'avis a été créé avec succès.", type: Review })
   @ApiHeader({ name: 'Location', description: 'URI du nouvel avis créé (ex: /api/v1/reviews/rev_12345678)' })
@@ -68,7 +68,7 @@ export class ReviewsController {
 
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  @ApiOperation({ summary: 'Supprimer un avis' })
+  @ApiOperation({ summary: 'Supprimer un avis', description: 'Vas recalculer le reviewCount et le averageRating du lieu concerné.' })
   @ApiParam({ name: 'id', description: "Identifiant unique de l'avis", example: 'rev_12345678' })
   @ApiResponse({ status: HttpStatus.NO_CONTENT, description: 'Avis supprimé avec succès.' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Avis non trouvé.', type: ProblemDetailsDto })
