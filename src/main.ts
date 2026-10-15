@@ -4,10 +4,33 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 import { configureSwagger } from './configure-swagger';
 import helmet from 'helmet';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as http from 'node:http';
+import 'dotenv/config';
 
 async function bootstrap() {
+
+  const keyPath = process.env.HTTPS_KEY_PATH
+  const certPath = process.env.HTTPS_CERT_PATH
+
+  if(!keyPath || !certPath){
+    throw new Error('HTTPS_KEY_PATH et HTTPS_CERT_PATH sont obligatoires (Veuillez vérifier le .env et le .env.example)')
+  }
+
+  const httpsOptions = {
+    key: fs.readFileSync(
+      path.join(process.cwd(), keyPath!),
+    ),
+    cert: fs.readFileSync(
+      path.join(process.cwd(), certPath!),
+    ),
+  }
   
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions
+  });
+
   app.setGlobalPrefix('api');
 
   app.use(helmet());
@@ -36,5 +59,13 @@ async function bootstrap() {
   configureSwagger(app);
   
   await app.listen(process.env.PORT || 3000);
+
+  const redirectPort = Number(process.env.HTTP_REDIRECT_PORT) || 3001
+  http
+  .createServer((req, res) => {
+    res.writeHead(301, { Location: `https://localhost:${process.env.PORT }${req.url ?? '/'}` })
+    res.end()
+  })
+  .listen(redirectPort)
 }
 bootstrap();
