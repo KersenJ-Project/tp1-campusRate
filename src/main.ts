@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType, MethodNotAllowedException } from '@nestjs/common';
 import { ProblemDetailsFilter } from './common/filters/problem-details.filter';
 import { configureSwagger } from './configure-swagger';
 import helmet from 'helmet';
@@ -33,7 +33,16 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  app.use(helmet());
+  const allowedMethods = ['GET', 'POST', 'PATCH', 'DELETE','OPTIONS'];
+  app.use(
+    helmet(),
+    (req: any, _res: any, next: any) => {
+      if (!allowedMethods.includes(req.method)) {
+        return next(new MethodNotAllowedException(`Méthode ${req.method} non autorisée.`));
+      }
+      next();
+    }
+  );
 
   app.enableCors({
     origin: ['http://localhost:5173'],
